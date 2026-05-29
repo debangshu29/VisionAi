@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Outdoor Navigation | Assistive Vision Navigator{% endblock %}
+
+{% block extra_head %}{% endblock %}
+
+{% block hero %}{% endblock %}
+
+{% block content %}
+  <main class="dashboard outdoor-grid">
+    <section class="panel route-panel">
+      <div class="panel-head">
+        <h2>Outdoor Route Planner</h2>
+        <span id="routeStatusBadge" class="badge neutral">Idle</span>
+      </div>
+
+      <div class="route-grid route-grid-outdoor">
+        <div class="route-controls">
+          <form id="destinationForm" class="destination-form">
+            <label for="destinationInput">Where should I guide you?</label>
+            <div class="question-row destination-row">
+              <input
+                id="destinationInput"
+                name="destination"
+                type="text"
+                placeholder='Type or say something like "Take me to Apollo Hospital"'
+                autocomplete="off"
+              />
+              <button class="button primary" type="submit">Set route</button>
+              <button id="voiceDestination" class="button secondary" type="button">
+                Speak destination
+              </button>
+            </div>
+            <p class="support-text">
+              The assistant listens for natural phrases, confirms the place, and then starts
+              walking guidance.
+            </p>
+          </form>
+
+          <div class="journey-actions">
+            <button id="useLocation" class="button secondary" type="button">
+              Use current location
+            </button>
+            <button id="refreshRoute" class="button secondary" type="button">
+              Refresh route
+            </button>
+            <button id="shortestRoute" class="button secondary" type="button">
+              Correct to shortest route
+            </button>
+            <button id="clearRoute" class="button tertiary" type="button">
+              Clear route
+            </button>
+          </div>
+
+          <article id="confirmationCard" class="confirmation-card hidden">
+            <span class="command-label">Voice confirmation</span>
+            <p id="confirmationText">
+              I will confirm the place before the route starts.
+            </p>
+            <div id="confirmationChoices" class="confirmation-choices hidden" aria-live="polite"></div>
+            <div class="journey-actions">
+              <button id="confirmDestination" class="button primary" type="button">
+                Confirm
+              </button>
+              <button id="retryDestination" class="button secondary" type="button">
+                Try again
+              </button>
+              <button id="voiceConfirm" class="button tertiary" type="button">
+                Answer by voice
+              </button>
+            </div>
+          </article>
+
+          <article class="answer-card route-update-card">
+            <span class="command-label">Trip update</span>
+            <p id="journeyMessage">
+              Say or type a destination to start walking guidance.
+            </p>
+          </article>
+        </div>
+
+        <div class="route-overview">
+          <div class="navigation-cards">
+            <article class="navigation-card">
+              <span>Current location</span>
+              <strong id="locationText">Not captured yet</strong>
+            </article>
+            <article class="navigation-card">
+              <span>Destination</span>
+              <strong id="destinationLabel">No destination selected</strong>
+            </article>
+            <article class="navigation-card">
+              <span>Remaining distance</span>
+              <strong id="routeDistance">Waiting for route</strong>
+            </article>
+            <article class="navigation-card">
+              <span>Estimated time</span>
+              <strong id="routeEta">Waiting for route</strong>
+            </article>
+          </div>
+
+          <article class="route-map-shell">
+            <div class="panel-head compact">
+              <h3>Walking route</h3>
+              <span id="routeMapStatus" class="hint">Map will appear after a route is ready.</span>
+            </div>
+            <div id="routeMap" class="route-map" aria-label="Walking route map preview"></div>
+          </article>
+        </div>
+      </div>
+
+      <div class="route-next-step">
+        <article class="answer-card">
+          <span class="command-label">Next route step</span>
+          <p id="nextRouteInstruction">No active route yet.</p>
+        </article>
+      </div>
+
+      <div class="content-block">
+        <h3>Turn-by-turn guidance</h3>
+        <ol id="routeStepList" class="steps-list">
+          <li>Capture your location and set a destination to begin.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="panel video-panel">
+      <div class="panel-head">
+        <h2>Live Camera</h2>
+        <span id="connectionBadge" class="badge neutral">Connecting</span>
+      </div>
+      <div class="stream-frame">
+        <img
+          id="mjpeg"
+          src="{% url 'video_feed' %}"
+          alt="Live annotated camera stream"
+        />
+      </div>
+      <p class="support-text">
+        Outdoor navigation keeps the same live camera feed so route guidance and obstacle
+        awareness stay visible together.
+      </p>
+    </section>
+
+    <section class="panel safety-panel">
+      <div class="panel-head">
+        <h2>Safety Guidance</h2>
+        <span id="urgencyBadge" class="badge neutral">Waiting</span>
+      </div>
+
+      <article class="command-card urgency-low" id="commandCard">
+        <span class="command-label">Current movement cue</span>
+        <strong id="commandValue">Initializing</strong>
+        <p id="spokenMessage">Waiting for scene guidance.</p>
+      </article>
+
+      <div class="metrics">
+        <article class="metric">
+          <span>Safe direction</span>
+          <strong id="safeDirection">-</strong>
+        </article>
+        <article class="metric">
+          <span>Estimated clear steps</span>
+          <strong id="clearSteps">-</strong>
+        </article>
+        <article class="metric">
+          <span>Objects seen</span>
+          <strong id="objectCount">0</strong>
+        </article>
+      </div>
+
+      <div class="content-block">
+        <h3>Scene summary</h3>
+        <p id="sceneSummary">Live safety analysis will appear here.</p>
+      </div>
+    </section>
+
+    <section class="panel conversation-panel home-assistant-panel">
+      <div class="panel-head">
+        <h2>Navigator Conversation</h2>
+        <div class="panel-head-actions">
+          <span class="hint" id="conversationHint"></span>
+          <button id="voiceToggle" class="button secondary" type="button">
+            Voice guidance: On
+          </button>
+          <button id="talkToNavigator" class="button primary" type="button">
+            Talk to navigator
+          </button>
+          <button id="repeatInstruction" class="button tertiary" type="button">
+            Repeat latest guidance
+          </button>
+        </div>
+      </div>
+
+      <div class="conversation-surface">
+        <article class="conversation-card">
+          <span class="command-label">Last thing I heard</span>
+          <p id="heardTranscript">Nothing yet.</p>
+        </article>
+        <article class="conversation-card">
+          <span class="command-label">Navigator response</span>
+          <p id="assistantReply">
+            Ask for a place, ask if it is open, ask what food it offers, ask what is on your route, search for almost any place on the way, or ask me to add that place as a stop.
+          </p>
+        </article>
+      </div>
+
+      <div class="quick-questions">
+        <button class="chip" type="button" data-command="Take me to the nearest bus stop.">
+          Nearest bus stop
+        </button>
+        <button class="chip" type="button" data-command="Is the destination open now?">
+          Is it open?
+        </button>
+        <button class="chip" type="button" data-command="Find a pharmacy on my route.">
+          Pharmacy on route
+        </button>
+        <button class="chip" type="button" data-command="Add the nearest ATM to my route.">
+          Add ATM stop
+        </button>
+        <button class="chip" type="button" data-command="Is there any KFC on my route?">
+          Brand on route
+        </button>
+        <button class="chip" type="button" data-command="What stops are on my route?">
+          Route stops
+        </button>
+      </div>
+
+      <div id="conversationFeed" class="conversation-feed">
+        <article class="conversation-entry assistant">
+          <strong>Navigator</strong>
+          <p>I am ready to guide you, describe the destination, search route-side places, and add or remove stopovers while you walk.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel obstacles-panel">
+      <div class="panel-head">
+        <h2>Detected Objects</h2>
+        <span id="lastUpdated" class="hint">Not updated yet</span>
+      </div>
+      <div id="obstacleList" class="obstacle-list">
+        <article class="empty-state">
+          Object cards will appear here after the first frame is processed.
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <section class="page-outro">
+    <p class="eyebrow">About</p>
+    <div class="page-outro-copy">
+      <h2>Outdoor Navigation</h2>
+      <h3>Conversation-led walking guidance with live safety awareness.</h3>
+      <p>
+        This page is focused on natural voice-first navigation. It helps set walking routes,
+        confirm destinations, answer route and destination questions, search places along the
+        way, and keep safety cues visible beside the live camera feed.
+      </p>
+    </div>
+
+    <div class="hero-pills page-outro-pills">
+      <span class="pill">Walking mode routing</span>
+      <span class="pill">Voice confirmation</span>
+      <span class="pill">Dynamic rerouting</span>
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {% if google_maps_api_key %}
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=places&v=weekly&loading=async"
+      defer
+    ></script>
+  {% endif %}
+  <script src="{% static 'main/outdoor.js' %}" defer></script>
+{% endblock %}
+
+

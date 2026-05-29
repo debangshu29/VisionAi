@@ -1,0 +1,62 @@
+# Python
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+*.log
+local_settings.py
+
+# Machine Learning / Heavy files
+*.pt
+*.pth
+*.weights
+models/
+runs/
+dataset/
+dataset_fresh/
+dataset_sources/
+yolov8n_openvino_model/
+*.zip
+*.tgz
+*.tar.gz
+debug_viz/
+bus.jpg
+kernel.errors.txt
+test_out.txt
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# MacOS
+.DS_Store

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Assistive Vision Navigator{% endblock %}
+
+{% block content %}
+  <main class="dashboard home-grid">
+    <section class="panel video-panel">
+      <div class="panel-head">
+        <h2>Live Camera</h2>
+        <span id="connectionBadge" class="badge neutral">Connecting</span>
+      </div>
+      <div class="stream-frame">
+        <img
+          id="mjpeg"
+          src="{% url 'video_feed' %}"
+          alt="Live annotated camera stream"
+        />
+      </div>
+      <p class="support-text">
+        The camera feed stays visible here so the demo shows what the system sees
+        while it gives spoken guidance.
+      </p>
+    </section>
+
+    <section class="panel guidance-panel">
+      <div class="panel-head">
+        <h2>Immediate Guidance</h2>
+        <span id="urgencyBadge" class="badge neutral">Waiting</span>
+      </div>
+
+      <article class="command-card urgency-low" id="commandCard">
+        <span class="command-label">Current command</span>
+        <strong id="commandValue">Initializing</strong>
+        <p id="spokenMessage">Waiting for camera analysis and guidance.</p>
+      </article>
+
+      <div class="metrics">
+        <article class="metric">
+          <span>Safe direction</span>
+          <strong id="safeDirection">-</strong>
+        </article>
+        <article class="metric">
+          <span>Estimated clear steps</span>
+          <strong id="clearSteps">-</strong>
+        </article>
+        <article class="metric">
+          <span>Objects seen</span>
+          <strong id="objectCount">0</strong>
+        </article>
+      </div>
+
+      <article class="answer-card journey-card">
+        <span class="command-label">Current guidance</span>
+        <p id="journeyMessage">Live voice guidance will appear here.</p>
+      </article>
+
+      <div class="content-block">
+        <h3>Scene summary</h3>
+        <p id="sceneSummary">Starting live scene analysis.</p>
+      </div>
+
+      <div class="content-block">
+        <h3>Recommended steps</h3>
+        <ol id="recommendedSteps" class="steps-list">
+          <li>Waiting for guidance.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="panel obstacles-panel">
+      <div class="panel-head">
+        <h2>Detected Objects</h2>
+        <span id="lastUpdated" class="hint">Not updated yet</span>
+      </div>
+      <div id="obstacleList" class="obstacle-list">
+        <article class="empty-state">
+          Object cards will appear here after the first frame is processed.
+        </article>
+      </div>
+    </section>
+
+    <section class="panel assistant-panel home-assistant-panel">
+      <div class="panel-head">
+        <h2>Focused Scene Assistant</h2>
+        <button id="voiceToggle" class="button secondary" type="button">
+          Voice guidance: On
+        </button>
+      </div>
+
+      <form id="questionForm" class="question-form">
+        <label for="questionInput">Ask what you need to know</label>
+        <div class="question-row">
+          <input
+            id="questionInput"
+            name="question"
+            type="text"
+            placeholder="Example: Which side is safer?"
+            autocomplete="off"
+          />
+          <button class="button primary" type="submit">Ask</button>
+          <button id="voiceQuestion" class="button secondary" type="button">
+            Use mic
+          </button>
+        </div>
+      </form>
+
+      <div class="quick-questions">
+        <button class="chip" type="button" data-question="What is ahead of me?">
+          What is ahead?
+        </button>
+        <button class="chip" type="button" data-question="Is the path clear?">
+          Is the path clear?
+        </button>
+        <button class="chip" type="button" data-question="Which side is safer?">
+          Which side is safer?
+        </button>
+        <button class="chip" type="button" data-question="How do I avoid the obstacle?">
+          How do I avoid it?
+        </button>
+      </div>
+
+      <article class="answer-card">
+        <span class="command-label">Assistant answer</span>
+        <p id="assistantAnswer">
+          You can ask about the path, nearby objects, or the best direction to move next.
+        </p>
+      </article>
+
+      <button id="speakNow" class="hidden" type="button" aria-hidden="true" tabindex="-1">
+        Speak latest alert
+      </button>
+    </section>
+  </main>
+
+  <section class="page-outro">
+    <p class="eyebrow">About</p>
+    <div class="page-outro-copy">
+      <h2>Focused Assistive Vision</h2>
+      <h3>Live obstacle guidance for confident walking.</h3>
+      <p>
+        The main dashboard stays centered on what matters most in the current moment:
+        obstacle detection, safer movement suggestions, and clear spoken guidance that
+        helps the user understand what is directly ahead.
+      </p>
+    </div>
+
+    <div class="hero-pills page-outro-pills">
+      <span class="pill">Full object awareness</span>
+      <span class="pill">Voice-first alerts</span>
+      <span class="pill">Low-friction demo view</span>
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'main/home.js' %}?v=20260327" defer></script>
+{% endblock %}
+

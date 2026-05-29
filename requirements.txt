@@ -1,0 +1,10 @@
+django>=4.2.0
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+openvino>=2023.1.0
+google-generativeai>=0.4.0
+mediapipe>=0.10.9
+pyyaml>=6.0
+Pillow>=10.0.0
+requests>=2.31.0

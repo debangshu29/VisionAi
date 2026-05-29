@@ -1,0 +1,200 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Assistive Vision Navigator{% endblock %}</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23132230'/%3E%3Cpath d='M18 46V18h8l12 16V18h8v28h-8L26 30v16z' fill='%23f6f2ea'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="{% static 'main/app.css' %}" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body
+    class="{% block body_class %}app-shell{% endblock %}"
+    data-scene-url="{% url 'latest_scene_api' %}"
+    data-safety-url="{% url 'latest_safety_scene_api' %}"
+    data-context-url="{% url 'latest_context_scene_api' %}"
+    data-ask-url="{% url 'scene_question_api' %}"
+    data-indoor-url="{% url 'indoor_assist_api' %}"
+    data-companion-realtime-token-url="{% url 'companion_realtime_token_api' %}"
+    data-companion-chat-url="{% url 'companion_chat_api' %}"
+    data-home-url="{% url 'home' %}"
+    data-indoor-page-url="{% url 'indoor_assistant' %}"
+    data-describe-url="{% url 'indoor_describe' %}"
+    data-outdoor-url="{% url 'outdoor_navigation' %}"
+    data-startup-error="{{ startup_error|default_if_none:'' }}"
+    data-page="{{ active_page|default:'home' }}"
+    data-google-maps-key="{{ google_maps_api_key|default:'' }}"
+    data-companion-realtime-enabled="{{ companion_realtime_enabled|default:'false' }}"
+    data-indoor-default-mode="{{ indoor_default_mode|default:'navigator' }}"
+    data-indoor-mode-locked="{{ indoor_mode_locked|default:'false' }}"
+  >
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand-mark" href="{% url 'home' %}">
+          <span class="brand-kicker">Final Year Project</span>
+          <strong>Assistive Vision Navigator</strong>
+        </a>
+        <nav class="site-nav" aria-label="Primary">
+          <a
+            class="nav-link {% if active_page == 'home' %}is-active{% endif %}"
+            href="{% url 'home' %}"
+          >
+            Main Dashboard
+          </a>
+          <a
+            class="nav-link {% if active_page == 'indoor' %}is-active{% endif %}"
+            href="{% url 'indoor_assistant' %}"
+          >
+            Indoor Assist
+          </a>
+          <a
+            class="nav-link {% if active_page == 'describe' %}is-active{% endif %}"
+            href="{% url 'indoor_describe' %}"
+          >
+            Describe
+          </a>
+          <a
+            class="nav-link {% if active_page == 'outdoor' %}is-active{% endif %}"
+            href="{% url 'outdoor_navigation' %}"
+          >
+            Outdoor Navigation
+          </a>
+        </nav>        <!-- Gemini API Usage Limiter Bar -->
+        <div class="gemini-limiter" style="margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; background: rgba(0,0,0,0.2); padding: 5px 12px; border-radius: 20px;">
+          <span style="color: #bbb;">Gemini Limits (15 RPM):</span>
+          <div style="width: 100px; height: 6px; background: #333; border-radius: 3px; overflow: hidden; position: relative;">
+            <div id="geminiUsageBar" style="width: 0%; height: 100%; background: #4caf50; transition: width 0.3s, background-color 0.3s;"></div>
+          </div>
+          <span id="geminiUsageText" style="color: #fff; font-weight: bold; min-width: 40px; text-align: center;">0 / 15</span>
+        </div>
+      </header>
+
+      {% if startup_error %}
+        <section class="alert danger" id="startupError">
+          Camera startup issue: {{ startup_error }}
+        </section>
+      {% endif %}
+
+      {% block hero %}{% endblock %}
+      {% block content %}{% endblock %}
+    </div>
+
+    <div class="companion-shell" id="companionShell">
+      <section class="companion-panel hidden" id="companionPanel" aria-live="polite">
+        <div class="companion-head">
+          <div>
+            <p class="eyebrow">Assistive Voice Companion</p>
+            <h2>Navi</h2>
+          </div>
+          <button id="companionClose" class="button tertiary companion-close" type="button" aria-label="Close companion panel">
+            Close
+          </button>
+        </div>
+
+        <div class="companion-status-row">
+          <span id="companionWakeBadge" class="badge neutral">Wake word ready</span>
+          <span id="companionListeningBadge" class="badge neutral">Idle</span>
+        </div>
+
+        <article class="answer-card">
+          <span class="command-label">Last thing I heard</span>
+          <p id="companionHeard">Say "Hey Navi", say "Navi", or press the round button to talk.</p>
+        </article>
+
+        <article class="answer-card">
+          <span class="command-label">Companion reply</span>
+          <p id="companionReply">
+            I can switch pages, answer site questions, start walking navigation from any page, keep route guidance going, search places on your route, save contacts, call people, open Google, Maps, YouTube, music, and set reminders.
+          </p>
+        </article>
+
+        <div class="companion-actions">
+          <button id="companionMic" class="button primary" type="button">Talk to Navi</button>
+          <button id="companionWakeToggle" class="button secondary" type="button">Wake word: On</button>
+        </div>
+
+        <p class="support-text companion-hint">
+          Ask naturally about this website, the current page, walking routes, surroundings, route-side places, contacts, reminders, Google, Maps, YouTube, music, time, battery, weather, or a broader question.
+        </p>
+
+        <details class="companion-section">
+          <summary>Saved Contacts</summary>
+          <div class="content-block companion-block">
+            <div class="companion-contact-form">
+              <input id="companionContactName" type="text" placeholder="Contact name" autocomplete="off" />
+              <input id="companionContactNumber" type="text" placeholder="Phone number" autocomplete="off" />
+              <button id="companionSaveContact" class="button secondary" type="button">Save</button>
+            </div>
+            <div id="companionContactList" class="companion-list">
+              <p class="support-text">No saved contacts yet.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="companion-section">
+          <summary>Reminders</summary>
+          <div class="content-block companion-block">
+            <div id="companionReminderList" class="companion-list">
+              <p class="support-text">No active reminders yet.</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <button id="companionToggle" class="companion-fab" type="button" aria-label="Open Navi voice companion">
+        <span class="companion-fab-mark">N</span>
+        <span class="companion-fab-label">Navi</span>
+      </button>
+    </div>
+
+    {% block extra_scripts %}{% endblock %}
+    <script src="{% static 'main/navi.js' %}?v=navi-gemini-v9" defer></script>    <script>
+      // Global Gemini Limiter (15 RPM tracker)
+      (function() {
+        let usage = [];
+        const RPM_LIMIT = 15;
+        const bar = document.getElementById('geminiUsageBar');
+        const text = document.getElementById('geminiUsageText');
+        
+        function updateUI() {
+          const now = Date.now();
+          usage = usage.filter(timestamp => now - timestamp < 60000);
+          const count = usage.length;
+          
+          if(bar && text) {
+            text.textContent = count + " / " + RPM_LIMIT;
+            const percentage = Math.min((count / RPM_LIMIT) * 100, 100);
+            bar.style.width = percentage + "%";
+            
+            if (percentage >= 100) {
+              bar.style.backgroundColor = '#f44336';
+            } else if (percentage >= 75) {
+              bar.style.backgroundColor = '#ffeb3b';
+            } else {
+              bar.style.backgroundColor = '#4caf50';
+            }
+          }
+        }
+        
+        setInterval(updateUI, 1000);
+        
+        // Intercept fetch to track usage on describe and room modes
+        const originalFetch = window.fetch;
+        window.fetch = async function(...args) {
+          const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url ? args[0].url : "");
+          if (url.includes('mode=describe') || url.includes('mode=room')) {
+            usage.push(Date.now());
+            updateUI();
+          }
+          return originalFetch.apply(this, args);
+        };
+      })();
+    </script>
+  </body>
+</html>
+
+

@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Describe | Assistive Vision Navigator{% endblock %}
+
+{% block content %}
+  <main class="dashboard indoor-grid">
+    <section class="panel video-panel">
+      <div class="panel-head">
+        <h2>Live Camera</h2>
+        <span id="connectionBadge" class="badge neutral">Connecting</span>
+      </div>
+      <div class="stream-frame">
+        <img id="mjpeg" src="{% url 'video_feed' %}" alt="Live annotated camera stream" />
+      </div>
+      <p class="support-text">
+        The describe page keeps the same live camera feed so the demo still shows the shared vision pipeline.
+      </p>
+    </section>
+
+    <section class="panel guidance-panel">
+      <div class="panel-head">
+        <h2>Indoor Safety Cue</h2>
+        <span id="urgencyBadge" class="badge neutral">Waiting</span>
+      </div>
+
+      <article class="command-card urgency-low" id="commandCard">
+        <span class="command-label">Current movement cue</span>
+        <strong id="commandValue">Initializing</strong>
+        <p id="spokenMessage">Waiting for indoor scene guidance.</p>
+      </article>
+
+      <div class="metrics">
+        <article class="metric">
+          <span>Safe direction</span>
+          <strong id="safeDirection">-</strong>
+        </article>
+        <article class="metric">
+          <span>Clear steps</span>
+          <strong id="clearSteps">-</strong>
+        </article>
+        <article class="metric">
+          <span>Objects seen</span>
+          <strong id="objectCount">0</strong>
+        </article>
+      </div>
+
+      <article class="answer-card journey-card">
+        <span class="command-label">Indoor guidance</span>
+        <p id="journeyMessage">Indoor movement guidance will appear here.</p>
+      </article>
+
+      <div class="content-block">
+        <h3>Scene summary</h3>
+        <p id="sceneSummary">Starting indoor scene analysis.</p>
+      </div>
+
+      <div class="content-block">
+        <h3>Recommended steps</h3>
+        <ol id="recommendedSteps" class="steps-list">
+          <li>Waiting for indoor guidance.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="panel assistant-panel indoor-mode-panel home-assistant-panel">
+      <div class="panel-head">
+        <h2>Describe</h2>
+        <div class="panel-head-actions">
+<!--          <span id="modeBadge" class="badge neutral">Describe</span>-->
+          <button id="voiceToggle" class="button secondary" type="button">
+            Voice guidance: On
+          </button>
+        </div>
+      </div>
+
+      <article class="conversation-card">
+        <span class="command-label">Describe focus</span>
+        <p id="modeSummary">Describe mode focuses on richer visual explanation of one object or the whole visible scene.</p>
+      </article>
+
+      <form id="questionForm" class="question-form">
+        <label for="questionInput">Ask the describe assistant</label>
+        <div class="question-row">
+          <input
+            id="questionInput"
+            name="question"
+            type="text"
+            placeholder="Example: Describe everything in front of me"
+            autocomplete="off"
+          />
+          <button class="button primary" type="submit">Ask</button>
+          <button id="voiceQuestion" class="button secondary" type="button">
+            Talk to describe assistant
+          </button>
+        </div>
+      </form>
+
+      <div id="quickQuestions" class="quick-questions"></div>
+
+      <article class="answer-card">
+        <span class="command-label">Assistant answer</span>
+        <p id="assistantAnswer">Ask for object details, a whole-scene explanation, or what something looks like in your hand.</p>
+      </article>
+
+      <button id="speakNow" class="hidden" type="button" aria-hidden="true" tabindex="-1">
+        Speak latest guidance
+      </button>
+    </section>
+
+    <section class="panel indoor-insight-panel">
+      <div class="panel-head">
+        <h2>Indoor Insights</h2>
+        <span id="lastUpdated" class="hint">Not updated yet</span>
+      </div>
+
+      <div class="insight-grid">
+        <article class="navigation-card">
+          <span>Likely room</span>
+          <strong id="roomEstimate">Unknown</strong>
+        </article>
+        <article class="navigation-card">
+          <span>Confidence</span>
+          <strong id="roomConfidence">-</strong>
+        </article>
+      </div>
+
+      <div class="content-block">
+        <h3>Why I think that</h3>
+        <p id="roomReason">Room estimation and sign clues will appear after the camera sees stronger indoor landmarks.</p>
+      </div>
+
+      <div class="content-block">
+        <h3>Visible landmarks</h3>
+        <ul id="landmarkList" class="landmark-list">
+          <li>Landmarks will appear here after the first indoor analysis.</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h3>Sign / text reading</h3>
+        <p id="signSupport">The describe page still shows sign and room clues from the shared indoor pipeline.</p>
+      </div>
+
+      <div class="content-block">
+        <h3>Detected text lines</h3>
+        <p id="readTextPreview">No readable text has been captured yet.</p>
+      </div>
+
+      <div class="content-block">
+        <h3>Description preview</h3>
+        <p id="descriptionPreview">Ask about a visible object or the full scene for a richer visual explanation.</p>
+      </div>
+
+      <div class="content-block">
+        <h3>Hand sign reading</h3>
+        <p id="gestureSupport">Hand-sign insights from the shared indoor pipeline will still appear here when available.</p>
+      </div>
+    </section>
+
+    <section class="panel obstacles-panel">
+      <div class="panel-head">
+        <h2>Detected Objects</h2>
+        <span class="hint">Indoor object list</span>
+      </div>
+      <div id="obstacleList" class="obstacle-list">
+        <article class="empty-state">
+          Object cards will appear here after the first frame is processed.
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <section class="page-outro">
+    <p class="eyebrow">About</p>
+    <div class="page-outro-copy">
+      <h2>Describe</h2>
+      <h3>Detailed object and scene explanation on a separate page.</h3>
+      <p>
+        This page is dedicated to fuller visual description. It helps explain object color,
+        shape, size, position, and overall scene appearance while still using the same live
+        camera and indoor safety pipeline as the rest of the project.
+      </p>
+    </div>
+
+    <div class="hero-pills page-outro-pills">
+      <span class="pill">Object details</span>
+      <span class="pill">Color and shape</span>
+      <span class="pill">Whole-scene description</span>
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'main/indoor.js' %}" defer></script>
+{% endblock %}
