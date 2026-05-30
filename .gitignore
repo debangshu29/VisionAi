@@ -60,3 +60,10 @@ test_out.txt
 
 # MacOS
 .DS_Store
+
+# Datasets & Videos
+*.mp4
+*.webm
+dataset_eval/
+dataset_eval_fast/
+eval_results/

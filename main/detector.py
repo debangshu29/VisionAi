@@ -102,6 +102,15 @@ MODEL_HAZARD_PATH = Path(__file__).resolve().parent.parent / "models" / "custom_
 # Hazard model runs every Nth frame to save CPU; cached results fill the gap
 HAZARD_RUN_EVERY_N = 6
 
+
+def _resolve_model_path() -> Path:
+    """Return the resolved path to the base YOLO model file.
+
+    Used by tests to verify the expected model is on disk without
+    instantiating a full CameraProcessor.
+    """
+    return MODEL_BASE_PATH
+
 cv2.setUseOptimized(True)
 
 
@@ -211,14 +220,14 @@ class CameraProcessor:
             self.model_base = YOLO(str(self.model_base_path), task="detect")
             try:
                 self.model_base.fuse()
-            except Exception as e:
+            except Exception:
                 pass
                 
             # Load Hazard Model (14 custom classes)
             self.model_hazard = YOLO(str(self.model_hazard_path), task="detect")
             try:
                 self.model_hazard.fuse()
-            except Exception as e:
+            except Exception:
                 pass
                 
             # Load Depth Model (MiDaS)
@@ -414,7 +423,7 @@ class CameraProcessor:
                     xyxy = box.xyxy[0].cpu().numpy().astype(int).tolist()
                     conf = float(box.conf[0].cpu().numpy())
                     cls = int(box.cls[0].cpu().numpy())
-                except Exception as e:
+                except Exception:
                     # Fallback for different tensor formats
                     xyxy = box.xyxy[0].numpy().astype(int).tolist()
                     conf = float(box.conf[0])
@@ -778,7 +787,7 @@ class CameraProcessor:
                                 align_corners=False,
                             ).squeeze()
                         self._cached_depth_map = prediction.cpu().numpy()
-                    except Exception as e:
+                    except Exception:
                         pass
                 
                 detections_hazard = self._cached_hazard_dets

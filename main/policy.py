@@ -181,18 +181,3 @@ class FeedbackPolicy:
         return "CLEAR"
 
 
-if __name__ == "__main__":
-    policy = FeedbackPolicy()
-    mock_scene = {
-        "obstacles": [
-            {
-                "class_name": "obstacle",
-                "confidence": 0.8,
-                "distance_m": 0.8,
-                "ttc_seconds": None,
-            }
-        ],
-        "traversability_grid": np.ones((12, 16)),
-    }
-    print(f"Test 1 (Close Obstacle): {policy.evaluate(mock_scene)}")
-    print(f"Test 2 (Duplicate): {policy.evaluate(mock_scene)}")

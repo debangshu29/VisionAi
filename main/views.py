@@ -141,9 +141,7 @@ def latest_context_scene_api(request):
     return JsonResponse({"scene": camera.get_latest_scene(view="context")})
 
 
-import base64
-import cv2
-import numpy as np
+
 
 def indoor_assist_api(request):
     question = request.GET.get("q", "")
@@ -153,8 +151,6 @@ def indoor_assist_api(request):
     except Exception as exc:
         return JsonResponse({"error": str(exc), "question": question, "mode": mode}, status=503)
 
-    from .companion_assistant import answer_companion_message
-    import base64
 
     frame = camera.get_latest_frame()
 
